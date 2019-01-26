@@ -1,6 +1,19 @@
 const {Question} = require("../content/content-model");
 const Tag = require("./tag-model");
 
+exports.getAllowedTags = async (req, res) => {
+	const {tag} = req.params;
+	try {
+		const tags = await Tag
+			.find({name: {$regex: tag, $options: "i"}})
+			.limit(5)
+			.select("-__v");
+		res.status(200).json({tags});
+	} catch (error) {
+		res.status(500).json({error});
+	}
+};
+
 exports.getTags = async (req, res) => {
 	try {
 		const tags = await Tag
