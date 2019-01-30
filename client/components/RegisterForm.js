@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Link from "next/link";
-import {Form, Input, Button} from "antd";
+import {Form, Input, Button, Alert} from "antd";
 
 import "antd/dist/antd.css"; // TODO: Check if this `import` is even necessary.
 import "../static/styles/RegisterForm.css";
@@ -10,16 +10,32 @@ const FormItem = Form.Item;
 
 class RegisterForm extends React.Component {
 	state = {
-		confirmDirty: false
+		confirmDirty: false,
+		error: null
 	}
 
 	handleSubmit = e => {
 		e.preventDefault();
-		this.props.form.validateFields((err, values) => { // TODO: Visually inform the user if there are any issues with the given input.
+		this.props.form.validateFields((err, values) => {
 			if (!err) { // The given inputs are valid.
-				this.props.signup(values);
+				this.props.signup(values)
+					.then(error => {
+						this.setState({error});
+					})
+					.catch(error => {
+						this.setState({error});
+					});
 			}
 		});
+	};
+
+	validateEmail = (rule, value, callback) => {
+		const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if (value && !emailRegex.test(value.toLowerCase())) {
+			callback("Badly formatted email");
+		}
+
+		callback();
 	};
 
 	compareToFirstPassword = (rule, value, callback) => {
@@ -42,6 +58,7 @@ class RegisterForm extends React.Component {
 
 	render() {
 		const {getFieldDecorator} = this.props.form;
+		const {error} = this.state;
 
 		return (
 			<div>
@@ -66,6 +83,8 @@ class RegisterForm extends React.Component {
 									{
 										required: true,
 										message: "Please enter your E-mail"
+									}, {
+										validator: this.validateEmail
 									}
 								]
 							})(<Input placeholder="E-mail"/>)
@@ -107,6 +126,13 @@ class RegisterForm extends React.Component {
 						<a>Log in</a>
 					</Link>
 				</Form>
+				{error &&
+						<Alert
+							description={error.message}
+							type="error"
+							showIcon
+						/>
+					}
 			</div>
 		);
 	}

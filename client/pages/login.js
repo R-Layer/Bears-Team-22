@@ -31,9 +31,10 @@ class Login extends React.Component {
 			await fetch("http://localhost:5000/auth/login", fetchOpts);
 			await firebase.auth().signOut(); // Cookies are set, no need to mantain the token in the storage
 
-			await Router.push("/");
+			Router.push("/");
+			return null;
 		} catch (error) {
-			console.log(error);
+			return error;
 		}
 	};
 
